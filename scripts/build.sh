@@ -85,6 +85,17 @@ else
     echo "      请运行: $0 <SDK_ROOT>" >&2
 fi
 
+# rkaiq installed 目录：CMakeLists 默认写 ../rk_aiq（该目录名在不同 SDK 下可能是 rk_aiq 或 rkaiq），
+# 这里按 SDK 内实际路径显式指定，保证干净构建能找到 rk_aiq.h 等头文件。
+RKAIQ_INSTALLED_DIR=""
+if [ -n "$SDK_ROOT" ]; then
+    RKAIQ_INSTALLED_DIR="$SDK_ROOT/external/camera_engine_rkaiq/rkaiq/build/linux/output/$ARCH/installed"
+    if [ ! -d "$RKAIQ_INSTALLED_DIR" ]; then
+        echo "警告: rkaiq installed 目录不存在: $RKAIQ_INSTALLED_DIR" >&2
+        echo "      请先构建 rkaiq，或用 -DRKAIQ_INSTALLED_DIR=<path> 覆盖。" >&2
+    fi
+fi
+
 if [ -n "$SDK_ROOT" ]; then
     echo "== 检查闭源库 =="
     ./scripts/fetch-libs.sh "$SDK_ROOT"
@@ -95,6 +106,7 @@ cmake -S . -B "$BUILD_DIR" \
     -DARCH="$ARCH" \
     -DISP_HW_VERSION="$ISP_HW_VERSION" \
     -DRKAIQ_TARGET_SOC="$RKAIQ_TARGET_SOC" \
+    ${RKAIQ_INSTALLED_DIR:+-DRKAIQ_INSTALLED_DIR="$RKAIQ_INSTALLED_DIR"} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_FLAGS="$SDK_INC" \
     -DCMAKE_CXX_FLAGS="$SDK_INC" \
