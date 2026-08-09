@@ -46,6 +46,10 @@ else()
     endif()
 endif()
 
+# 使用 DRM atomic 非阻塞提交（libdrm_FOUND 为假时走 LOCAL_DRM_LIB 分支，
+# 该宏仍需无条件开启，否则回退到同步 drmModeSetPlane，显示每帧阻塞 ~10ms）
+add_compile_options(-DISPDEMO_ATOMIC_NONBLOCK=1)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
 
