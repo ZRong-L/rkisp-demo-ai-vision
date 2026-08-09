@@ -25,6 +25,14 @@
 set -euo pipefail
 
 SDK_ROOT="${1:-${SDK_ROOT:-}}"
+# 未显式指定时，若本仓库位于 SDK 的 external/camera_engine_rkaiq/rkisp_demo，自动探测
+if [ -z "$SDK_ROOT" ]; then
+    _up="$(cd "$(dirname "$0")/.." && pwd)"   # 仓库根
+    if [ -d "$_up/../../linux-rga" ] && [ -d "$_up/../../mpp" ]; then
+        SDK_ROOT="$(cd "$_up/../.." && pwd)"
+        echo "自动探测 SDK_ROOT: $SDK_ROOT"
+    fi
+fi
 if [ -n "$SDK_ROOT" ] && [ ! -d "$SDK_ROOT" ]; then
     echo "错误: SDK_ROOT 不存在: $SDK_ROOT" >&2
     exit 1
@@ -55,6 +63,27 @@ if [ ! -x "$GCC" ] || [ ! -x "$GXX" ]; then
     exit 1
 fi
 
+# 从 SDK_ROOT 推导 SDK 头文件 include 路径（MPP/glib/gstreamer/rkaiq/linux-rga）。
+# 这些是 rkaiq_encoder(MPP) / rkaiq_rtsp(GStreamer) 等新增模块所需的 SDK 头文件，
+# 原构建通过 -DCMAKE_CXX_FLAGS 传入；这里由 SDK_ROOT 参数化，避免硬编码绝对路径。
+SDK_INC=""
+if [ -n "$SDK_ROOT" ]; then
+    SDK_INC="-I$SDK_ROOT/external/camera_engine_rkisp/ext/rkisp/usr/include/gstreamer-1.0"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/camera_engine_rkisp/ext/rkisp/usr/include/glib-2.0-64"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/camera_engine_rkisp/ext/rkisp/usr/include/glib-2.0-64/include"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/mpp/inc -I$SDK_ROOT/external/mpp/mpp/inc"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/mpp/mpp/base/inc -I$SDK_ROOT/external/mpp/mpp/codec/inc"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/mpp/mpp/hal/inc -I$SDK_ROOT/external/mpp/mpp/vproc/inc"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/mpp/osal/inc -I$SDK_ROOT/external/mpp/osal/driver/inc"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/camera_engine_rkaiq/rkaiq/include"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/camera_engine_rkaiq/rkaiq/include/algos"
+    SDK_INC="$SDK_INC -I$SDK_ROOT/external/linux-rga/include"
+    SDK_INC="$SDK_INC -DGST_API_IMPORT= -DISPDEMO_ENABLE_DRM=1 -DISPDEMO_ENABLE_RGA=1"
+else
+    echo "警告: 未指定/探测到 SDK_ROOT，无法自动附加 SDK 头文件路径，编译可能失败。" >&2
+    echo "      请运行: $0 <SDK_ROOT>" >&2
+fi
+
 if [ -n "$SDK_ROOT" ]; then
     echo "== 检查闭源库 =="
     ./scripts/fetch-libs.sh "$SDK_ROOT"
@@ -66,6 +95,8 @@ cmake -S . -B "$BUILD_DIR" \
     -DISP_HW_VERSION="$ISP_HW_VERSION" \
     -DRKAIQ_TARGET_SOC="$RKAIQ_TARGET_SOC" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS="$SDK_INC" \
+    -DCMAKE_CXX_FLAGS="$SDK_INC" \
     -DCMAKE_CXX_STANDARD_LIBRARIES="$CXX_STANDARD_LIBS" \
     -DCMAKE_C_COMPILER="$GCC" \
     -DCMAKE_CXX_COMPILER="$GXX" \
