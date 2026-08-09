@@ -1,0 +1,34 @@
+# ---- 构建产物 ----
+build/
+build_local/
+CMakeFiles/
+*.o
+*.a
+*.so
+*.so.*
+exe/
+all_lib/
+
+# ---- 闭源 SDK 库：由 scripts/fetch-libs.sh 从本地 Rockchip SDK 拷贝，不随仓库分发 ----
+demo/libs/arm64/*.so
+demo/libs/arm64/*.so.*
+demo/libs/arm32/*.so
+demo/libs/arm32/*.so.*
+
+# ---- 运行时模型文件（AGPL/转换自 YOLOv5，不随仓库分发，见 model/README.md）----
+model/
+*.rknn
+
+# ---- SDK 符号链接（demo/include/rga 等指向 SDK 内部目录，由 fetch-libs.sh 重建）----
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+.DS_Store
+
+# ---- 日志 / 临时 ----
+*.log
+*.tmp

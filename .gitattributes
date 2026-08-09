@@ -1,0 +1,13 @@
+# 强制文本文件使用 LF，避免 Windows/跨平台换行符差异污染 diff
+* text=auto
+
+*.c   text eol=lf
+*.h   text eol=lf
+*.cpp text eol=lf
+*.cc  text eol=lf
+*.mk  text eol=lf
+*.cmake text eol=lf
+*.sh  text eol=lf
+*.py  text eol=lf
+*.md  text eol=lf
+*.txt text eol=lf
