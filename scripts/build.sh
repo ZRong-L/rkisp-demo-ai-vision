@@ -85,6 +85,15 @@ else
     echo "      请运行: $0 <SDK_ROOT>" >&2
 fi
 
+# 链接搜索路径：闭源库（demo/libs/arm64）+ gstreamer/glib（camera_engine_rkisp ext），
+# 并允许共享库未定义符号。原构建通过 CMAKE_EXE_LINKER_FLAGS 传入，这里由 SDK_ROOT 参数化。
+SDK_LDFLAGS=""
+if [ -n "$SDK_ROOT" ]; then
+    SDK_LDFLAGS="-L$PWD/demo/libs/arm64"
+    SDK_LDFLAGS="$SDK_LDFLAGS -L$SDK_ROOT/external/camera_engine_rkisp/ext/rkisp/usr/lib64"
+    SDK_LDFLAGS="$SDK_LDFLAGS -Wl,--allow-shlib-undefined"
+fi
+
 # rkaiq installed 目录：CMakeLists 默认写 ../rk_aiq（该目录名在不同 SDK 下可能是 rk_aiq 或 rkaiq），
 # 这里按 SDK 内实际路径显式指定，保证干净构建能找到 rk_aiq.h 等头文件。
 # 注意：CMakeLists 中变量名是 RK_AIQ_INSTALLED_DIR（带下划线），-D 必须与之完全一致。
@@ -111,6 +120,7 @@ cmake -S . -B "$BUILD_DIR" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_FLAGS="$SDK_INC" \
     -DCMAKE_CXX_FLAGS="$SDK_INC" \
+    -DCMAKE_EXE_LINKER_FLAGS="$SDK_LDFLAGS" \
     -DCMAKE_CXX_STANDARD_LIBRARIES="$CXX_STANDARD_LIBS" \
     -DCMAKE_C_COMPILER="$GCC" \
     -DCMAKE_CXX_COMPILER="$GXX" \
