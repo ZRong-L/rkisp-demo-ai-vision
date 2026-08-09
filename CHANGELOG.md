@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### 板端实测回归修复（15.8fps 恢复）
+- **回归**：开源整理时误删 CMakeLists 中无条件的 `-DISPDEMO_ATOMIC_NONBLOCK=1`
+  （当时误判为重复行）。因构建走 LOCAL_DRM_LIB 分支（`libdrm_FOUND` 为假），
+  `if(libdrm_FOUND)` 内的该宏不生效，回退到同步 `drmModeSetPlane`，帧率从 15.8fps 掉到 12fps。
+- **修复**：恢复无条件定义并加注释说明。
+- **验证**：板端实测，NPU 600MHz（不提频）下 atomic 显示 + 其他优化即达
+  **15.7~15.8fps**（AI 流总耗时约 50-59ms）；提频到 900MHz 推理再降但帧率受源帧率限制不再提升。
+
 ### 开源前的整理（本次提交）
 - **可移植性**：CMakeLists 移除绝对路径，gst-rtsp-server 头文件随项目提供，`demo/libs` 相对路径构建。
 - **可配置性**：新增 `--model <path>` 命令行参数，模型路径默认 `./model/yolov5s-640-640.rknn`，不再硬编码板端路径。
