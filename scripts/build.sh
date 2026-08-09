@@ -26,10 +26,11 @@ set -euo pipefail
 
 SDK_ROOT="${1:-${SDK_ROOT:-}}"
 # 未显式指定时，若本仓库位于 SDK 的 external/camera_engine_rkaiq/rkisp_demo，自动探测
+# （仓库根 ../../.. 即 SDK 根，例如 .../external/camera_engine_rkaiq/rkisp_demo 上溯3级 = SDK 根）
 if [ -z "$SDK_ROOT" ]; then
     _up="$(cd "$(dirname "$0")/.." && pwd)"   # 仓库根
-    if [ -d "$_up/../../linux-rga" ] && [ -d "$_up/../../mpp" ]; then
-        SDK_ROOT="$(cd "$_up/../.." && pwd)"
+    if [ -d "$_up/../../../external/linux-rga" ] && [ -d "$_up/../../../external/mpp" ]; then
+        SDK_ROOT="$(cd "$_up/../../.." && pwd)"
         echo "自动探测 SDK_ROOT: $SDK_ROOT"
     fi
 fi
