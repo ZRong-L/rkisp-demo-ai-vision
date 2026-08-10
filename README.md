@@ -1,5 +1,8 @@
 # RK3568 端侧 AI 视觉流水线（rkisp-demo 扩展）
 
+该项目在csdn中有更详细介绍，访问：
+https://blog.csdn.net/weixin_41734376/article/details/163639741?spm=1001.2014.3001.5502
+
 基于 Rockchip [camera_engine_rkaiq/rkisp_demo](https://github.com/rockchip-linux/camera_engine_rkaiq)
 改造的全硬件加速端侧 AI 视觉流水线：**MIPI 采集 → ISP 3A → RGA 预处理 → NPU 推理 → 画框显示 → MPP 编码 → RTSP 推流**。
 
